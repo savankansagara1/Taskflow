@@ -1,0 +1,33 @@
+[project]
+name = "taskflow"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "savan", email = "savan.kansagara@esparkbizmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "alembic>=1.19.1",
+    "fastapi>=0.141.1",
+    "psycopg>=3.3.4",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy[asyncio]>=2.0.52",
+    "uvicorn[standard]>=0.52.4",
+]
+
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+]
