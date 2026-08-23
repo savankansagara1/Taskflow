@@ -1,5 +1,6 @@
 from logging.config import fileConfig
 import asyncio
+import selectors
 
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -67,9 +68,17 @@ async def run_async_migrations() -> None:
     await connectable.dispose()
 
 
+# def run_migrations_online() -> None:
+#     asyncio.run(
+#         run_async_migrations()
+#     )
+
 def run_migrations_online() -> None:
     asyncio.run(
-        run_async_migrations()
+        run_async_migrations(),
+        loop_factory=lambda: asyncio.SelectorEventLoop(
+            selectors.SelectSelector()
+        ),
     )
 
 

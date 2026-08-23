@@ -33,3 +33,68 @@ class ProjectService:
         await self.session.commit()
 
         return project
+    
+    
+    async def get_project_by_id(
+        self,
+        project_id:int,
+    ) -> Project:
+        
+        project = await self.project_repository.get_by_id(
+            project_id=project_id
+        )
+        
+        if project is None:
+            raise ValueError("Project not found")
+        
+        return project
+    
+    
+    async def get_all_projects(
+     self,
+    )-> list[Project]:
+
+     return await self.project_repository.get_all()
+ 
+ 
+    async def update_project(
+        self,
+        project_id:int,
+        name:str,
+    ) -> Project:
+        
+        project = await self.project_repository.get_by_id(
+            project_id=project_id
+        )
+        
+        if project is None:
+            raise ValueError("Project not found")
+        
+        
+        update_project = await self.project_repository.update(
+            project=project,
+            name=name,
+        )
+        
+        await self.session.commit()
+        
+        return update_project
+    
+    
+    async def delete_project(
+     self,
+     project_id: int,
+    ) -> None:
+
+     project = await self.project_repository.get_by_id(
+        project_id=project_id,
+    )
+
+     if project is None:
+        raise ValueError("Project not found")
+
+     await self.project_repository.delete(
+        project=project,
+    )
+
+     await self.session.commit()

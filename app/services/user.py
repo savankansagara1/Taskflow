@@ -4,6 +4,11 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
 from app.repositories.user import UserRepository
+from app.core.password import hash_password
+
+from app.core.password import verify_password
+from app.core.security import create_access_token
+from app.schemas.user import UserLogin
 
 
 class UserService:
@@ -15,10 +20,15 @@ class UserService:
         self,
         username: str,
         email: str,
+        password: str,
     ) -> User:
+        
+        password_hash = hash_password(password)
+        
         user = await self.repository.create(
             username=username,
             email=email,
+            password_hash=password_hash,
         )
 
         try:
@@ -89,3 +99,31 @@ class UserService:
         raise
 
      return True 
+ 
+ 
+ 
+ 
+    async def login(
+     self,
+     login_data: UserLogin,
+     ) -> str:
+      user = await self.repository.get_by_email(
+        email=login_data.email,
+    )
+
+      if user is None:
+        raise ValueError("Invalid email or password")
+
+      is_password_correct = verify_password(
+        login_data.password,
+        user.password_hash,
+    ) 
+
+      if not is_password_correct:
+        raise ValueError("Invalid email or password")
+
+      access_token = create_access_token(
+        user_id=user.id,
+    )
+
+      return access_token

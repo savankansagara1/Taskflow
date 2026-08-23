@@ -5,11 +5,16 @@ from sqlalchemy.exc import IntegrityError
 
 from app.services.user import UserService
 
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserLogin
+from app.api.dependencies import get_current_user
+from app.models.user import User
+
+from app.api.dependencies import get_current_user
 
 from fastapi import status
 
 from app.dependencies.database import get_db
+
 
 router = APIRouter()
 
@@ -41,6 +46,7 @@ async def create_user(
         user = await service.create_user(
             username=user_data.username,
             email=user_data.email,
+            password=user_data.password,
         )
     except IntegrityError:
         raise HTTPException(
@@ -50,7 +56,15 @@ async def create_user(
 
     return user
 
-
+@router.get("/me")
+async def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+    }
 
 @router.get(
     "/{user_id}",
@@ -125,3 +139,28 @@ async def delete_user(
             status_code=404,
             detail="User not found",
         )
+
+
+@router.post("/login")
+async def login_user(
+    login_data: UserLogin,
+    session: AsyncSession = Depends(get_db),
+):
+    service = UserService(session)
+
+    try:
+        access_token = await service.login(
+            login_data=login_data,
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+        }
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
+        

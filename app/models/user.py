@@ -19,6 +19,11 @@ class User(Base):
         nullable=False,
         unique=True,
     )
+    
+    password_hash : Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
 
     projects: Mapped[list["Project"]] = relationship(
         back_populates="owner"

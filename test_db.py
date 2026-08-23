@@ -1,8 +1,7 @@
 import asyncio
+import selectors
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncConnection
-
 from app.core.database import engine
 
 
@@ -12,4 +11,10 @@ async def main():
         print(result.scalar())
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(
+        main(),
+        loop_factory=lambda: asyncio.SelectorEventLoop(
+            selectors.SelectSelector()
+        ),
+    )

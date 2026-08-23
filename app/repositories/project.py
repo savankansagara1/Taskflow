@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.project import Project
-
+from sqlalchemy.orm import selectinload
 
 class ProjectRepository:
 
@@ -78,3 +78,20 @@ class ProjectRepository:
             await self.session.delete(project)
 
             await self.session.flush()
+
+
+            
+        async def get_by_id_with_owner(
+            self,
+            project_id: int,
+        ) -> Project | None:
+
+            result = await self.session.execute(
+                select(Project)
+                .options(
+                    selectinload(Project.owner)
+                )
+                .where(Project.id == project_id)
+            )
+
+            return result.scalar_one_or_none()    
