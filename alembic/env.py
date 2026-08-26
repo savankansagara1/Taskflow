@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.database import Base
-from app.models import User, Project
+from app.models import User, Project, ProjectMember, Task, Comment, Activity
 from app.core.config import settings
 
 from alembic import context

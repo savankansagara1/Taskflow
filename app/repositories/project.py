@@ -12,10 +12,13 @@ class ProjectRepository:
         async def create(
             self,
             name: str,
+            description: str | None,
             owner_id: int,
+            
         ) -> Project:
             project = Project(
                 name=name,
+                description=description,
                 owner_id=owner_id,
             )
 
@@ -61,9 +64,15 @@ class ProjectRepository:
         async def update(
             self,
             project: Project,
-            name: str,
+            name: str | None = None,
+            description: str | None = None,
         ) -> Project:
-            project.name = name
+
+            if name is not None:
+                project.name = name
+
+            if description is not None:
+                project.description = description
 
             await self.session.flush()
 

@@ -2,7 +2,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-# from app.models.project import Project
+
 
 class User(Base):
     __tablename__ = "users"
@@ -27,4 +27,26 @@ class User(Base):
 
     projects: Mapped[list["Project"]] = relationship(
         back_populates="owner"
+    )
+
+    project_members: Mapped[list["ProjectMember"]] = relationship(
+        back_populates="user",
+    )
+
+    tasks_created: Mapped[list["Task"]] = relationship(
+        foreign_keys="[Task.creator_id]",
+        back_populates="creator",
+    )
+
+    tasks_assigned: Mapped[list["Task"]] = relationship(
+        foreign_keys="[Task.assignee_id]",
+        back_populates="assignee",
+    )
+
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="author",
+    )
+
+    activities: Mapped[list["Activity"]] = relationship(
+        back_populates="user",
     )

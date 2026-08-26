@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.exc import IntegrityError
 
@@ -16,7 +17,10 @@ from fastapi import status
 from app.dependencies.database import get_db
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    )
 
 @router.get(
     "/",
@@ -143,14 +147,17 @@ async def delete_user(
 
 @router.post("/login")
 async def login_user(
-    login_data: UserLogin,
+    login_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_db),
 ):
     service = UserService(session)
 
     try:
         access_token = await service.login(
-            login_data=login_data,
+            login_data=UserLogin(
+                email=login_data.username,
+                password=login_data.password,
+            )
         )
 
         return {

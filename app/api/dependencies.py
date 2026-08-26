@@ -9,7 +9,7 @@ from app.repositories.user import UserRepository
 
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/users/login",
+    tokenUrl="/api/v1/users/login",
 )
 
 async def get_current_user(
