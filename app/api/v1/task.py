@@ -20,6 +20,27 @@ router = APIRouter(
     tags=["Tasks"],
 )
 
+my_tasks_router = APIRouter(
+    prefix="/tasks",
+    tags=["Tasks"],
+)
+
+
+@my_tasks_router.get(
+    "/me",
+    response_model=list[TaskResponse],
+)
+async def get_my_tasks(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Get all tasks for the current user irrespective of projects."""
+    service = TaskService(session)
+
+    return await service.get_my_tasks(
+        user_id=current_user.id,
+    )
+
 
 @router.post(
     "/",

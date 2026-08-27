@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.task import Task
@@ -114,3 +114,21 @@ class TaskRepository:
     ) -> None:
 
         await self.session.delete(task)
+
+    async def get_all_by_user(
+        self,
+        user_id: int,
+    ) -> list[Task]:
+
+        result = await self.session.execute(
+            select(Task)
+            .where(
+                or_(
+                    Task.creator_id == user_id,
+                    Task.assignee_id == user_id,
+                )
+            )
+            .order_by(Task.created_at.desc())
+        )
+
+        return list(result.scalars().all())

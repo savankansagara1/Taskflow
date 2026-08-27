@@ -154,6 +154,17 @@ class TaskService:
             project_id=project_id,
         )
 
+    async def get_my_tasks(
+        self,
+        user_id: int,
+    ) -> list[Task]:
+        """Return all tasks where the user is either the creator or assignee,
+        irrespective of which project they belong to."""
+
+        return await self.task_repository.get_all_by_user(
+            user_id=user_id,
+        )
+
     async def get_task_by_id(
         self,
         project_id: int,
