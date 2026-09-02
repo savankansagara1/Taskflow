@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.services.user import UserService
 
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserLogin
+from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserLogin, ForgotPasswordRequest, ForgotPasswordVerify, ForgotPasswordReset
 from app.api.dependencies import get_current_user
 from app.models.user import User
 
@@ -171,3 +171,61 @@ async def login_user(
             detail=str(error),
         )
         
+
+@router.post("/forgot-password")
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    session: AsyncSession = Depends(get_db),
+):
+    service = UserService(session)
+
+    try:
+        otp = await service.forgot_password(email=data.email)
+        # Return the OTP directly (no email service in this demo)
+        return {
+            "message": "OTP generated successfully",
+            "otp": otp,
+        }
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )
+
+
+@router.post("/verify-otp")
+async def verify_otp(
+    data: ForgotPasswordVerify,
+    session: AsyncSession = Depends(get_db),
+):
+    service = UserService(session)
+
+    try:
+        await service.verify_otp(email=data.email, otp=data.otp)
+        return {"message": "OTP verified successfully", "valid": True}
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+
+@router.post("/reset-password")
+async def reset_password(
+    data: ForgotPasswordReset,
+    session: AsyncSession = Depends(get_db),
+):
+    service = UserService(session)
+
+    try:
+        await service.reset_password(
+            email=data.email,
+            otp=data.otp,
+            new_password=data.new_password,
+        )
+        return {"message": "Password reset successfully"}
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )

@@ -6,6 +6,10 @@ import type {
   UserResponse,
   CurrentUser,
   UserUpdate,
+  ForgotPasswordRequest,
+  ForgotPasswordOtpResponse,
+  ForgotPasswordVerify,
+  ForgotPasswordReset,
 } from '@/types/api'
 
 // ── Login (OAuth2PasswordRequestForm — form-encoded) ──────────────────
@@ -47,6 +51,22 @@ export async function getAllUsers(): Promise<UserResponse[]> {
 // ── Update user ───────────────────────────────────────────────────────
 export async function updateUser(userId: number, data: UserUpdate): Promise<UserResponse> {
   const response = await apiClient.patch<UserResponse>(`/users/${userId}`, data)
+  return response.data
+}
+
+// ── Forgot Password ──────────────────────────────────────────────────
+export async function requestPasswordReset(data: ForgotPasswordRequest): Promise<ForgotPasswordOtpResponse> {
+  const response = await apiClient.post<ForgotPasswordOtpResponse>('/users/forgot-password', data)
+  return response.data
+}
+
+export async function verifyOtp(data: ForgotPasswordVerify): Promise<{ message: string; valid: boolean }> {
+  const response = await apiClient.post<{ message: string; valid: boolean }>('/users/verify-otp', data)
+  return response.data
+}
+
+export async function resetPassword(data: ForgotPasswordReset): Promise<{ message: string }> {
+  const response = await apiClient.post<{ message: string }>('/users/reset-password', data)
   return response.data
 }
 

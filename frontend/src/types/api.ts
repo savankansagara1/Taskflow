@@ -32,6 +32,27 @@ export interface CurrentUser {
   email: string
 }
 
+// ── Forgot Password Types ─────────────────────────────────────────────
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ForgotPasswordOtpResponse {
+  message: string
+  otp: string
+}
+
+export interface ForgotPasswordVerify {
+  email: string
+  otp: string
+}
+
+export interface ForgotPasswordReset {
+  email: string
+  otp: string
+  new_password: string
+}
+
 // ── Project Types ─────────────────────────────────────────────────────
 export interface ProjectCreate {
   name: string

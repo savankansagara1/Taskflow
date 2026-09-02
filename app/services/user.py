@@ -10,6 +10,16 @@ from app.core.password import verify_password
 from app.core.security import create_access_token
 from app.schemas.user import UserLogin
 
+import random
+import string
+import time
+
+
+# In-memory OTP store: { email: { "otp": str, "expires_at": float } }
+_otp_store: dict[str, dict] = {}
+
+OTP_EXPIRY_SECONDS = 300  # 5 minutes
+
 
 class UserService:
     def __init__(self, db: AsyncSession):
@@ -127,3 +137,56 @@ class UserService:
     )
 
       return access_token
+
+    async def forgot_password(self, email: str) -> str:
+        """Generate a 6-digit OTP for password reset. Returns the OTP."""
+        user = await self.repository.get_by_email(email=email)
+        if user is None:
+            raise ValueError("No account found with this email address")
+
+        otp = ''.join(random.choices(string.digits, k=6))
+        _otp_store[email] = {
+            "otp": otp,
+            "expires_at": time.time() + OTP_EXPIRY_SECONDS,
+        }
+        return otp
+
+    async def verify_otp(self, email: str, otp: str) -> bool:
+        """Verify that the OTP is valid and not expired."""
+        stored = _otp_store.get(email)
+        if stored is None:
+            raise ValueError("No OTP was requested for this email")
+
+        if time.time() > stored["expires_at"]:
+            del _otp_store[email]
+            raise ValueError("OTP has expired. Please request a new one")
+
+        if stored["otp"] != otp:
+            raise ValueError("Invalid OTP")
+
+        return True
+
+    async def reset_password(self, email: str, otp: str, new_password: str) -> bool:
+        """Reset user password after OTP verification."""
+        # Verify OTP first
+        await self.verify_otp(email, otp)
+
+        user = await self.repository.get_by_email(email=email)
+        if user is None:
+            raise ValueError("No account found with this email address")
+
+        new_hash = hash_password(new_password)
+        await self.repository.update(user=user, data={"password_hash": new_hash})
+
+        try:
+            await self.db.commit()
+        except IntegrityError:
+            await self.db.rollback()
+            raise
+
+        await self.db.refresh(user)
+
+        # Remove used OTP
+        _otp_store.pop(email, None)
+
+        return True

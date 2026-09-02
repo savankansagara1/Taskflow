@@ -17,7 +17,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [forgotPasswordNotice, setForgotPasswordNotice] = useState(false)
 
   // Location where user was trying to go before redirect
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard'
@@ -73,17 +72,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {forgotPasswordNotice && (
-          <div className="mb-stack-md p-3 rounded bg-surface-container text-secondary text-label-md flex items-center justify-between">
-            <span>Password reset is unavailable in this environment. Please contact your workspace administrator.</span>
-            <button
-              onClick={() => setForgotPasswordNotice(false)}
-              className="text-primary hover:opacity-70 p-1"
-            >
-              <span className="material-symbols-outlined text-[16px]">close</span>
-            </button>
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-stack-md">
@@ -109,13 +97,12 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <button
-                type="button"
-                onClick={() => setForgotPasswordNotice(true)}
-                className="font-sans text-label-md text-secondary hover:text-primary transition-colors focus:outline-none"
+              <Link
+                to="/forgot-password"
+                className="font-sans text-label-md text-secondary hover:text-primary transition-colors"
               >
                 Forgot Password?
-              </button>
+              </Link>
             </div>
             <PasswordInput
               id="password"
